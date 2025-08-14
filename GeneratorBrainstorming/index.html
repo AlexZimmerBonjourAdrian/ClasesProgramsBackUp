@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Generador de Personajes</title>
+	<style>
+		:root {
+			--fg: #e5e7eb;
+			--muted: #94a3b8;
+			--accent: #ffffff;
+			--c1: #ef4444; /* Rol */
+			--c1b: #b91c1c;
+			--c2: #f59e0b; /* Profesión */
+			--c2b: #b45309;
+			--c3: #10b981; /* Interno */
+			--c3b: #065f46;
+			--c4: #3b82f6; /* Externo */
+			--c4b: #1e40af;
+			--c5: #a855f7; /* Temática */
+			--c5b: #6b21a8;
+			--c6: #ec4899; /* Especie */
+			--c6b: #9d174d;
+			--c7: #14b8a6; /* Alineamiento moral */
+			--c7b: #0f766e;
+			--c8: #f43f5e; /* Objeto de interés */
+			--c8b: #9f1239;
+			--c9: #06b6d4; /* Características físicas */
+			--c9b: #0e7490;
+			--c10: #84cc16; /* Antecedentes */
+			--c10b: #65a30d;
+			--c11: #f97316; /* Motivaciones */
+			--c11b: #ea580c;
+			--c12: #8b5cf6; /* Relaciones */
+			--c12b: #7c3aed;
+			--c13: #06b6d4; /* Habilidades */
+			--c13b: #0e7490;
+			--c14: #dc2626; /* Debilidades */
+			--c14b: #b91c1c;
+			--c15: #059669; /* Entorno */
+			--c15b: #047857;
+			--c16: #7c3aed; /* Elementos narrativos */
+			--c16b: #6d28d9;
+			--c17: #0891b2; /* Características únicas */
+			--c17b: #0e7490;
+			--c18: #be185d; /* Elementos culturales */
+			--c18b: #9d174d;
+			--c19: #e11d48; /* Orientación sexual */
+			--c19b: #be123c;
+			--c20: #0d9488; /* Formato/Medio */
+			--c20b: #0f766e;
+			--c21: #f59e0b; /* Estilo autor */
+			--c21b: #d97706;
+			--c22: #10b981; /* Tipo de estilo */
+			--c22b: #059669;
+			--c23: #f472b6; /* Género */
+			--c23b: #db2777;
+		}
+
+		html, body {
+			margin: 0;
+			min-height: 100%;
+			background: radial-gradient(1200px 800px at 100% -10%, #312e81 0%, #0b1020 45%), linear-gradient(180deg, #0b1020, #0b1020);
+			color: var(--fg);
+			font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+		}
+
+		.container {
+			max-width: 680px;
+			margin: 0 auto;
+			padding: 28px 20px 36px;
+		}
+
+		h1 {
+			font-size: 32px;
+			margin: 0 0 6px 0;
+			letter-spacing: .2px;
+		}
+
+		.subtitle {
+			color: var(--muted);
+			margin: 0 0 22px 0;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 14px;
+		}
+
+		.card {
+			border-radius: 16px;
+			padding: 16px 18px;
+			display: grid;
+			gap: 8px;
+			color: #ffffff;
+			box-shadow: 0 8px 24px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
+			transform: translateZ(0);
+		}
+
+		/* Efecto minimal de "giro" (pulso) mientras está generando */
+		@keyframes pulseSpin {
+			0% { transform: scale(1); opacity: .8; }
+			50% { transform: scale(1.02); opacity: 1; }
+			100% { transform: scale(1); opacity: .85; }
+		}
+
+		.card.spinning { animation: pulseSpin .7s ease-in-out infinite; }
+		.card.stopped { animation: none !important; }
+
+		.card[data-accent="c1"] { background: linear-gradient(145deg, var(--c1), var(--c1b)); }
+		.card[data-accent="c2"] { background: linear-gradient(145deg, var(--c2), var(--c2b)); }
+		.card[data-accent="c3"] { background: linear-gradient(145deg, var(--c3), var(--c3b)); }
+		.card[data-accent="c4"] { background: linear-gradient(145deg, var(--c4), var(--c4b)); }
+		.card[data-accent="c5"] { background: linear-gradient(145deg, var(--c5), var(--c5b)); }
+		.card[data-accent="c6"] { background: linear-gradient(145deg, var(--c6), var(--c6b)); }
+		.card[data-accent="c7"] { background: linear-gradient(145deg, var(--c7), var(--c7b)); }
+		.card[data-accent="c8"] { background: linear-gradient(145deg, var(--c8), var(--c8b)); }
+		.card[data-accent="c9"] { background: linear-gradient(145deg, var(--c9), var(--c9b)); }
+		.card[data-accent="c10"] { background: linear-gradient(145deg, var(--c10), var(--c10b)); }
+		.card[data-accent="c11"] { background: linear-gradient(145deg, var(--c11), var(--c11b)); }
+		.card[data-accent="c12"] { background: linear-gradient(145deg, var(--c12), var(--c12b)); }
+		.card[data-accent="c13"] { background: linear-gradient(145deg, var(--c13), var(--c13b)); }
+		.card[data-accent="c14"] { background: linear-gradient(145deg, var(--c14), var(--c14b)); }
+		.card[data-accent="c15"] { background: linear-gradient(145deg, var(--c15), var(--c15b)); }
+		.card[data-accent="c16"] { background: linear-gradient(145deg, var(--c16), var(--c16b)); }
+		.card[data-accent="c17"] { background: linear-gradient(145deg, var(--c17), var(--c17b)); }
+		.card[data-accent="c18"] { background: linear-gradient(145deg, var(--c18), var(--c18b)); }
+		.card[data-accent="c19"] { background: linear-gradient(145deg, var(--c19), var(--c19b)); }
+		.card[data-accent="c20"] { background: linear-gradient(145deg, var(--c20), var(--c20b)); }
+		.card[data-accent="c21"] { background: linear-gradient(145deg, var(--c21), var(--c21b)); }
+		.card[data-accent="c22"] { background: linear-gradient(145deg, var(--c22), var(--c22b)); }
+		.card[data-accent="c23"] { background: linear-gradient(145deg, var(--c23), var(--c23b)); }
+
+		.label {
+			font-size: 12px;
+			text-transform: uppercase;
+			letter-spacing: 0.12em;
+			color: rgba(255,255,255,.85);
+			text-shadow: 0 1px 0 rgba(0,0,0,.25);
+		}
+
+		.value {
+			font-size: 20px;
+			font-weight: 800;
+			line-height: 1.3;
+			text-shadow: 0 1px 0 rgba(0,0,0,.28);
+		}
+
+		.actions {
+			margin-top: 24px;
+		}
+
+		button {
+			background: linear-gradient(145deg, #22d3ee, #3b82f6);
+			color: #001018;
+			border: none;
+			padding: 14px 18px;
+			border-radius: 12px;
+			cursor: pointer;
+			font-weight: 800;
+			letter-spacing: .2px;
+			box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.45);
+		}
+
+		button:focus { outline: 2px solid #22d3ee; outline-offset: 2px; }
+		button:hover { filter: brightness(1.04); }
+
+		/* Estilos específicos para botones de control avanzado */
+		.adv-controls button {
+			transition: all 0.2s ease;
+		}
+		.adv-controls button:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 6px 16px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.4) !important;
+		}
+		.adv-controls button:active {
+			transform: translateY(0);
+			box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.2) !important;
+		}
+
+		@media (min-width: 640px) {
+			.grid { grid-template-columns: repeat(2, 1fr); }
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Personaje</h1>
+		<p class="subtitle">Genera un personaje con rol, profesión y rasgos internos/externos.</p>
+
+		<details class="advanced" style="margin: 10px 0 18px 0;">
+			<summary style="cursor: pointer; color: var(--fg);">Opciones avanzadas</summary>
+			<div class="adv-sections" style="padding-top: 10px; color: var(--fg);">
+				
+				<!-- Botones de control global -->
+				<div class="adv-controls" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+					<button id="select-all-advanced" style="background: linear-gradient(145deg, #10b981, #059669); color: #001018; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; letter-spacing: .1px; box-shadow: 0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.3);">Marcar todas</button>
+					<button id="deselect-all-advanced" style="background: linear-gradient(145deg, #ef4444, #dc2626); color: #001018; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; letter-spacing: .1px; box-shadow: 0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.3);">Desmarcar todas</button>
+					<button id="select-section-basicas" style="background: linear-gradient(145deg, #a855f7, #7c3aed); color: #001018; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; letter-spacing: .1px; box-shadow: 0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.3);">Solo básicas</button>
+					<button id="select-section-estilos" style="background: linear-gradient(145deg, #f59e0b, #d97706); color: #001018; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; letter-spacing: .1px; box-shadow: 0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.3);">Solo estilos</button>
+				</div>
+				
+				<!-- Sección: Básicas -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Básicas</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+				<label><input type="checkbox" id="adv-tematica" /> Temática</label>
+				<label><input type="checkbox" id="adv-especie" /> Especie</label>
+				<label><input type="checkbox" id="adv-alineamiento" /> Alineamiento moral</label>
+				<label><input type="checkbox" id="adv-objeto" /> Objeto de interés</label>
+						<label><input type="checkbox" id="adv-genero" /> Género</label>
+						<label><input type="checkbox" id="adv-orientacion" /> Orientación sexual</label>
+						<label><input type="checkbox" id="adv-formato" /> Formato/Medio</label>
+					</div>
+				</div>
+
+				<!-- Sección: Estilos -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Estilos</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-estilo-autor" /> Estilo de autor</label>
+						<label><input type="checkbox" id="adv-tipo-estilo" /> Tipo de estilo</label>
+					</div>
+				</div>
+
+				<!-- Sección: Características físicas -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Características físicas</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-edad" /> Edad</label>
+						<label><input type="checkbox" id="adv-altura" /> Altura</label>
+						<label><input type="checkbox" id="adv-complexion" /> Complexión</label>
+						<label><input type="checkbox" id="adv-caracteristicas" /> Características distintivas</label>
+					</div>
+				</div>
+
+				<!-- Sección: Antecedentes -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Antecedentes</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-clase-social" /> Clase social</label>
+						<label><input type="checkbox" id="adv-origen" /> Lugar de origen</label>
+						<label><input type="checkbox" id="adv-educacion" /> Educación</label>
+						<label><input type="checkbox" id="adv-historia-familiar" /> Historia familiar</label>
+					</div>
+				</div>
+
+				<!-- Sección: Motivaciones -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Motivaciones</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-motivacion" /> Motivación principal</label>
+						<label><input type="checkbox" id="adv-objetivo-corto" /> Objetivo a corto plazo</label>
+						<label><input type="checkbox" id="adv-sueno" /> Sueño/aspiración</label>
+					</div>
+				</div>
+
+				<!-- Sección: Relaciones -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Relaciones</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-estado-civil" /> Estado civil</label>
+						<label><input type="checkbox" id="adv-relacion-familiar" /> Relación familiar</label>
+						<label><input type="checkbox" id="adv-conexion-social" /> Conexión social</label>
+					</div>
+				</div>
+
+				<!-- Sección: Habilidades -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Habilidades</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-habilidad-especial" /> Habilidad especial</label>
+						<label><input type="checkbox" id="adv-talento-artistico" /> Talento artístico</label>
+						<label><input type="checkbox" id="adv-conocimiento" /> Conocimiento especializado</label>
+					</div>
+				</div>
+
+				<!-- Sección: Debilidades -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Debilidades</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-miedo" /> Miedo</label>
+						<label><input type="checkbox" id="adv-vicio" /> Vicio</label>
+						<label><input type="checkbox" id="adv-trauma" /> Trauma</label>
+					</div>
+				</div>
+
+				<!-- Sección: Entorno -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Entorno</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-epoca" /> Época</label>
+						<label><input type="checkbox" id="adv-clima" /> Clima</label>
+						<label><input type="checkbox" id="adv-entorno-urbano" /> Entorno urbano</label>
+					</div>
+				</div>
+
+				<!-- Sección: Elementos narrativos -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Elementos narrativos</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-tipo-conflicto" /> Tipo de conflicto</label>
+						<label><input type="checkbox" id="adv-arco-personaje" /> Arco de personaje</label>
+						<label><input type="checkbox" id="adv-funcion-trama" /> Función en la trama</label>
+					</div>
+				</div>
+
+				<!-- Sección: Características únicas -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Características únicas</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-poder" /> Poder/Don</label>
+						<label><input type="checkbox" id="adv-condicion" /> Condición especial</label>
+						<label><input type="checkbox" id="adv-marca" /> Marca distintiva</label>
+					</div>
+				</div>
+
+				<!-- Sección: Elementos culturales -->
+				<div class="adv-section" style="margin-bottom: 20px;">
+					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Elementos culturales</h4>
+					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+						<label><input type="checkbox" id="adv-religion" /> Religión</label>
+						<label><input type="checkbox" id="adv-cultura" /> Cultura</label>
+						<label><input type="checkbox" id="adv-valores" /> Valores</label>
+					</div>
+				</div>
+
+			</div>
+		</details>
+
+		<div id="results" class="grid" aria-live="polite"></div>
+
+		<div class="actions">
+			<button id="toggle-all">Detener todas</button>
+		</div>
+	</div>
+
+	<script>
+		// Datos base
+		const BASE_DATA = [
+			{ key: 'Rol', accent: 'c1', list: [
+				'protagonista','antagonista','deuteragonista','tritagonista','mentor','aliado','confidente','heraldo','guardián del umbral','embaucador','sombra','tentador','villano','antihéroe','líder','seguidor leal','traidor','mártir','cuidador','sabio','explorador','rebelde','visionario','forajido','justiciero','investigador','protector','usurpador','narrador'
+			] },
+			{ key: 'Profesión', accent: 'c2', list: [
+				'médico','enfermero','psicólogo','psiquiatra','trabajador social','fisioterapeuta','paramédico','bombero','policía','abogado','juez','procurador','contador','economista','administrador','profesor de primaria','profesor de secundaria','catedrático','investigador','científico','biólogo','químico','físico','geólogo','meteorólogo','arquitecto','urbanista','topógrafo','ingeniero civil','ingeniero mecánico','ingeniero eléctrico','ingeniero industrial','ingeniero químico','ingeniero informático','programador','desarrollador web','analista de datos','científico de datos','administrador de sistemas','técnico de soporte','electricista','carpintero','fontanero','soldador','albañil','pintor de casas','mecánico automotriz','técnico de laboratorio','panadero','pastelero','cocinero','chef','camarero','barista','sommelier','carnicero','pescador','agricultor','ganadero','jardinero','paisajista','repartidor','mensajero','conductor de autobús','taxista','piloto comercial','tripulante de cabina','controlador aéreo','fotógrafo','periodista','editor','diseñador gráfico','ilustrador','diseñador de moda','sastre','peluquero','maquillador','actor','músico','cantante','compositor','director de cine','director de teatro','coreógrafo','bibliotecario','archivero','museólogo','curador de arte','arqueólogo','historiador','traductor','intérprete','guía turístico','recepcionista','gerente de tienda','vendedor','cajero','logista','almacenista','guardia de seguridad','detective privado','criminólogo','veterinario','cuidador de animales','entrenador canino','apicultor','joyero','relojero','minero','obrero de fábrica','piloto de drones'
+			] },
+			{ key: 'Interno', accent: 'c3', list: [
+				'ambicioso','inseguro','idealista','pragmático','impulsivo','paciente','perfeccionista','paranoico','valiente','orgulloso','curioso','empático','frío','obstinado','creativo','melancólico','resiliente','introvertido','extrovertido','cínico','ingenuo','racional','emocional','disciplinado','caótico','calculador','temerario','cauteloso','perseverante','apático','compasivo','reservado','irascible','leal','desconfiado','optimista','pesimista','audaz','humilde','controlador','independiente'
+			] },
+			{ key: 'Externo', accent: 'c4', list: [
+				'peligroso','admirado','subestimado','famoso','infame','misterioso','confiable','amenazante','carismático','torpe','elegante','ruidoso','discreto','extravagante','respetado','temido','popular','desconocido','polémico','influyente','accesible','distante','imponente','humilde','mediático','notorio','caritativo','autoritario','servicial','arrogante','simpático','antipático','diligente','caótico','estricto','flexible','provocador','solemne','jovial','sobrio'
+			] }
+		];
+
+		// Datos avanzados
+		const ADVANCED_DATA = {
+			// Básicas
+			tematica: { key: 'Temática', accent: 'c5', list: [
+				'fantasía','ciencia ficción','histórico','noir','superhéroes','postapocalíptico','steampunk','ciberpunk','western','terror','misterio','romance','aventura','thriller','comedia','slice of life','mitología','espionaje','policíaco','distopía','space opera','ucronía','bélico','drama','surrealista'
+			] },
+			especie: { key: 'Especie', accent: 'c6', list: [
+				'humano','elfo','enano','orco','vampiro','hada','ángel','demonio','androide','alienígena','metamorfo','licántropo','gnomo','trasgo','sirena','ciborg','driada','centauro','medusa','dragón'
+			] },
+			alineamiento: { key: 'Alineamiento moral', accent: 'c7', list: [
+				'legal bueno','neutral bueno','caótico bueno','legal neutral','neutral verdadero','caótico neutral','legal malvado','neutral malvado','caótico malvado'
+			] },
+			objeto: { key: 'Objeto de interés', accent: 'c8', list: [
+				'llave antigua','mapa incompleto','reloj de bolsillo','medallón familiar','caja musical','diario perdido','anillo con inscripción','brújula que no apunta al norte','pluma estilográfica','cámara analógica','cáliz agrietado','botella con mensaje','tarjeta perforada','chip misterioso','gema opalescente','libro encadenado','máscara ritual','moneda con error','fotografía descolorida','llave USB encriptada','caja fuerte portátil','amuletos rotos','navaja grabada','linterna eterna','orbe de cristal','estatuilla de jade','piedra imantada','panfleto antiguo','billete fuera de circulación','sello de cera','tiza azul','naipes marcados','radiotransmisor','prisma arcoíris','espejo biselado','llavero con coordenadas','broche real','pergamino sellado','concha parlante','frasco fosforescente'
+			] },
+			orientacion: { key: 'Orientación sexual', accent: 'c19', list: [
+				'heterosexual','homosexual','bisexual','pansexual','asexual','demisexual','aromántico','gris-asexual','fluido','en cuestionamiento','no especificado'
+			] },
+			formato: { key: 'Formato/Medio', accent: 'c20', list: [
+				'videojuego','serie de TV','película','corto animado','anime','manga','novela','cómic','obra de teatro','documental','podcast','radio','teatro musical','performance art','instalación interactiva','realidad virtual','streaming','web serie','miniserie','película animada','stop motion','pixel art','3D animado','2D tradicional','live action'
+			] },
+			genero: { key: 'Género', accent: 'c23', list: [
+				'masculino','femenino','no binario','género fluido','agénero','bigénero','pangénero','demigénero','género neutro','género queer','género no conforme','género variante','género expansivo','género creativo','género místico','género tecnológico','género orgánico','género cósmico','género elemental','género híbrido'
+			] },
+
+			// Estilos
+			estiloAutor: { key: 'Estilo de autor', accent: 'c21', list: [
+				'Disney','Pixar','Studio Ghibli','Cory Loftis','Hayao Miyazaki','Wes Anderson','Tim Burton','Guillermo del Toro','Christopher Nolan','Quentin Tarantino','Alfred Hitchcock','Stanley Kubrick','David Fincher','Martin Scorsese','Steven Spielberg','James Cameron','Ridley Scott','Denis Villeneuve','Bong Joon-ho','Park Chan-wook','Akira Kurosawa','Federico Fellini','Ingmar Bergman','Jean-Luc Godard','François Truffaut','Pedro Almodóvar','Alejandro González Iñárritu','Alfonso Cuarón','Carlos Reygadas','Fernando Meirelles','Walter Salles'
+			] },
+			tipoEstilo: { key: 'Tipo de estilo', accent: 'c22', list: [
+				'realismo','impresionismo','expresionismo','surrealismo','cubismo','abstracto','minimalista','barroco','renacentista','gótico','art deco','art nouveau','pop art','arte conceptual','arte digital','pixel art','low poly','high poly','cel shading','toon shading','realismo fotográfico','estilo anime','estilo manga','estilo cartoon','estilo cómic','estilo noir','estilo western','estilo cyberpunk','estilo steampunk','estilo victoriano','estilo medieval'
+			] },
+
+			// Características físicas
+			edad: { key: 'Edad', accent: 'c9', list: [
+				'niño (5-12)','adolescente (13-17)','joven adulto (18-25)','adulto joven (26-35)','adulto maduro (36-50)','adulto mayor (51-65)','anciano (66+)','inmortal','edad desconocida','edad variable'
+			] },
+			altura: { key: 'Altura', accent: 'c9', list: [
+				'muy bajo','bajo','promedio','alto','muy alto','gigante','enano','altura variable','altura desconocida'
+			] },
+			complexion: { key: 'Complexión', accent: 'c9', list: [
+				'delgado','atlético','robusto','corpulento','frágil','musculoso','esbelto','redondeado','angular','elegante'
+			] },
+			caracteristicas: { key: 'Características distintivas', accent: 'c9', list: [
+				'cicatriz facial','tatuaje visible','piercings múltiples','tic nervioso','cojera','ojos de diferente color','cabello blanco','marca de nacimiento','protesis','quemadura','temblor en las manos','voz ronca','risa peculiar','forma de caminar única','gesto característico','postura distintiva','olor particular','sonrisa especial','mirada penetrante','aura misteriosa'
+			] },
+
+			// Antecedentes
+			claseSocial: { key: 'Clase social', accent: 'c10', list: [
+				'aristócrata','burgués','clase media alta','clase media','clase trabajadora','pobre','indigente','nuevo rico','noble caído','ascendente social','descendente social','sin clase definida'
+			] },
+			origen: { key: 'Lugar de origen', accent: 'c10', list: [
+				'ciudad grande','pueblo pequeño','zona rural','extranjero','nómada','isla remota','montaña','desierto','selva','tundra','suburbio','barrio marginal','zona industrial','zona residencial','sin hogar fijo','origen desconocido'
+			] },
+			educacion: { key: 'Educación', accent: 'c10', list: [
+				'autodidacta','educación básica','educación media','universitaria','militar','religiosa','técnica','artística','científica','filosófica','comercial','médica','legal','sin educación formal','educación especializada','educación internacional'
+			] },
+			historiaFamiliar: { key: 'Historia familiar', accent: 'c10', list: [
+				'huérfano','familia numerosa','hijo único','adoptado','exiliado','familia disfuncional','familia tradicional','familia moderna','padres separados','padres fallecidos','familia extendida','sin familia','familia adoptiva','familia reconstituida','familia monoparental'
+			] },
+
+			// Motivaciones
+			motivacion: { key: 'Motivación principal', accent: 'c11', list: [
+				'venganza','amor','poder','conocimiento','redención','supervivencia','justicia','libertad','reconocimiento','riqueza','paz interior','protección','descubrimiento','revolución','tradición','innovación','equilibrio','caos','orden','destrucción'
+			] },
+			objetivoCorto: { key: 'Objetivo a corto plazo', accent: 'c11', list: [
+				'encontrar trabajo','resolver misterio','escapar','proteger a alguien','conseguir dinero','encontrar refugio','hacer amigos','aprender habilidad','vengarse','reconciliarse','viajar','estudiar','trabajar','descansar','luchar','huir','buscar','encontrar','crear','destruir'
+			] },
+			sueno: { key: 'Sueño/aspiración', accent: 'c11', list: [
+				'fama','riqueza','paz interior','descubrimiento','revolución','familia','carrera exitosa','viajar por el mundo','ayudar a otros','ser recordado','vivir en paz','tener poder','ser libre','encontrar el amor','cumplir misión','dejar legado','ser feliz','cambiar el mundo','encontrar verdad','alcanzar perfección'
+			] },
+
+			// Relaciones
+			estadoCivil: { key: 'Estado civil', accent: 'c12', list: [
+				'soltero','casado','divorciado','viudo','comprometido','en relación','separado','poliamoroso','asexual','aromántico','complicado','no especificado'
+			] },
+			relacionFamiliar: { key: 'Relación familiar', accent: 'c12', list: [
+				'padre','madre','hijo','hija','hermano','hermana','abuelo','abuela','tío','tía','primo','prima','sobrino','sobrina','padrastro','madrastra','hijastro','hijastra','hermanastro','hermanastra','sin familia'
+			] },
+			conexionSocial: { key: 'Conexión social', accent: 'c12', list: [
+				'líder de banda','miembro de culto','espía','informante','mentor','discípulo','líder comunitario','activista','influencer','celebridad','anónimo','recluso','nómada','inmigrante','refugiado','exiliado','turista','estudiante','profesor','trabajador'
+			] },
+
+			// Habilidades
+			habilidadEspecial: { key: 'Habilidad especial', accent: 'c13', list: [
+				'artes marciales','hacking','diplomacia','supervivencia','medicina','ingeniería','magia','psíquico','combate','estrategia','persuasión','observación','memoria fotográfica','intuición','empatía','liderazgo','creatividad','análisis','adaptación','resistencia'
+			] },
+			talentoArtistico: { key: 'Talento artístico', accent: 'c13', list: [
+				'música','pintura','escritura','danza','escultura','fotografía','cine','teatro','poesía','dibujo','canto','actuación','diseño','arquitectura','moda','gastronomía','jardinería','artesanía','decoración','iluminación'
+			] },
+			conocimiento: { key: 'Conocimiento especializado', accent: 'c13', list: [
+				'historia antigua','botánica','astronomía','criminología','psicología','filosofía','teología','lingüística','arqueología','paleontología','geología','meteorología','oceanografía','antropología','sociología','economía','política','derecho','medicina','tecnología'
+			] },
+
+			// Debilidades
+			miedo: { key: 'Miedo', accent: 'c14', list: [
+				'alturas','espacios cerrados','oscuridad','agua','arañas','serpientes','multitudes','soledad','fracaso','éxito','cambio','responsabilidad','intimidad','rechazo','abandono','enfermedad','muerte','locura','pérdida de control','incertidumbre'
+			] },
+			vicio: { key: 'Vicio', accent: 'c14', list: [
+				'alcohol','drogas','juego','trabajo','compras','comida','sexo','poder','fama','dinero','tecnología','deportes','apuestas','tabaco','medicamentos','internet','redes sociales','televisión','videojuegos','coleccionismo'
+			] },
+			trauma: { key: 'Trauma', accent: 'c14', list: [
+				'pérdida de ser querido','accidente','guerra','abuso','traición','abandono','violencia','catástrofe natural','enfermedad','pobreza','discriminación','aislamiento','humillación','tortura','secuestro','violación','muerte cercana','fracaso público','pérdida de memoria','experiencia paranormal'
+			] },
+
+			// Entorno
+			epoca: { key: 'Época', accent: 'c15', list: [
+				'prehistórica','antigua','medieval','renacentista','industrial','victoriana','belle époque','art deco','guerra fría','contemporánea','futuro cercano','futuro lejano','postapocalíptica','alternativa','paralela','atemporal'
+			] },
+			clima: { key: 'Clima', accent: 'c15', list: [
+				'desértico','tropical','ártico','templado','lluvioso','seco','húmedo','ventoso','nevado','tormentoso','soleado','nublado','variable','extremo','artificial','controlado'
+			] },
+			entornoUrbano: { key: 'Entorno urbano', accent: 'c15', list: [
+				'metrópolis','ciudad pequeña','suburbio','barrio marginal','zona rural','pueblo fantasma','ciudad flotante','ciudad subterránea','colonia espacial','estación orbital','ciudad amurallada','distrito comercial','zona residencial','área industrial','centro histórico','nuevo desarrollo'
+			] },
+
+			// Elementos narrativos
+			tipoConflicto: { key: 'Tipo de conflicto', accent: 'c16', list: [
+				'interno','interpersonal','social','ambiental','sobrenatural','tecnológico','político','económico','religioso','cultural','generacional','de género','racial','de clase','de poder','de ideología','de supervivencia','de identidad','de lealtad','de fe'
+			] },
+			arcoPersonaje: { key: 'Arco de personaje', accent: 'c16', list: [
+				'redención','caída','crecimiento','estancamiento','transformación','regresión','evolución','revolución','adaptación','resistencia','aceptación','negación','superación','fracaso','éxito','equilibrio','desequilibrio','armonía','conflicto','resolución'
+			] },
+			funcionTrama: { key: 'Función en la trama', accent: 'c16', list: [
+				'catalizador','obstáculo','aliado temporal','antagonista secreto','mentor','heraldo','guardián','embaucador','sombra','tentador','víctima','testigo','investigador','protector','destructor','creador','mediador','provocador','estabilizador','agitador'
+			] },
+
+			// Características únicas
+			poder: { key: 'Poder/Don', accent: 'c17', list: [
+				'telepatía','regeneración','suerte extrema','memoria fotográfica','intuición','empatía','manipulación del tiempo','teletransportación','invisibilidad','vuelo','superfuerza','supervelocidad','control mental','manipulación de elementos','curación','precognición','telequinesis','metamorfosis','inmortalidad','control de la realidad'
+			] },
+			condicion: { key: 'Condición especial', accent: 'c17', list: [
+				'inmortal','viajero temporal','múltiples personalidades','amnesia','síndrome de Estocolmo','trastorno de identidad','autismo','síndrome de Asperger','TDAH','depresión','ansiedad','TEPT','trastorno bipolar','esquizofrenia','trastorno obsesivo-compulsivo','fobia social','agorafobia','claustrofobia','acrofobia','hipocondría'
+			] },
+			marca: { key: 'Marca distintiva', accent: 'c17', list: [
+				'ojo de diferente color','cabello blanco','voz única','aura especial','cicatriz mágica','tatuaje místico','piercing sagrado','marca de nacimiento especial','protesis avanzada','implante tecnológico','marca de clan','símbolo sagrado','tatuaje tribal','piercing ritual','marca de guerra','cicatriz de honor','tatuaje de esclavo','marca de hereje','símbolo de poder','marca de destino'
+			] },
+
+			// Elementos culturales
+			religion: { key: 'Religión', accent: 'c18', list: [
+				'creyente devoto','agnóstico','ateo','místico','fanático','tolerante','fundamentalista','liberal','conservador','progresista','tradicionalista','reformista','sincretista','panteísta','animista','chamánico','monoteísta','politeísta','panteísta','humanista'
+			] },
+			cultura: { key: 'Cultura', accent: 'c18', list: [
+				'tradicionalista','moderno','cosmopolita','nacionalista','universalista','conservador','progresista','revolucionario','reaccionario','adaptativo','resistente','asimilado','marginal','dominante','subordinada','emergente','decadente','renaciente','híbrida','pura'
+			] },
+			valores: { key: 'Valores', accent: 'c18', list: [
+				'familia','honor','libertad','justicia','conocimiento','poder','amor','lealtad','verdad','belleza','sabiduría','valentía','compasión','humildad','dignidad','respeto','tolerancia','solidaridad','responsabilidad','integridad'
+			] }
+		};
+
+		const advancedSelections = { 
+			// Básicas
+			tematica: false, especie: false, alineamiento: false, objeto: false, genero: false, orientacion: false, formato: false,
+			// Estilos
+			estiloAutor: false, tipoEstilo: false,
+			// Características físicas
+			edad: false, altura: false, complexion: false, caracteristicas: false,
+			// Antecedentes
+			claseSocial: false, origen: false, educacion: false, historiaFamiliar: false,
+			// Motivaciones
+			motivacion: false, objetivoCorto: false, sueno: false,
+			// Relaciones
+			estadoCivil: false, relacionFamiliar: false, conexionSocial: false,
+			// Habilidades
+			habilidadEspecial: false, talentoArtistico: false, conocimiento: false,
+			// Debilidades
+			miedo: false, vicio: false, trauma: false,
+			// Entorno
+			epoca: false, clima: false, entornoUrbano: false,
+			// Elementos narrativos
+			tipoConflicto: false, arcoPersonaje: false, funcionTrama: false,
+			// Características únicas
+			poder: false, condicion: false, marca: false,
+			// Elementos culturales
+			religion: false, cultura: false, valores: false
+		};
+		let activeBlocks = [];
+		let isSpinning = [];
+		let intervals = [];
+
+		// Recordar último índice por clave para evitar repetición inmediata
+		const lastIndexByKey = {};
+
+		// (definidos dinámicamente en buildCards)
+
+		function randomIndex(size, avoidIndex = -1) {
+			if (size <= 1) return 0;
+			let idx = Math.floor(Math.random() * size);
+			if (idx === avoidIndex) idx = (idx + 1) % size;
+			return idx;
+		}
+
+		function pickAndSet(cardIndex) {
+			const { key, list } = activeBlocks[cardIndex];
+			const prev = lastIndexByKey[key] ?? -1;
+			const idx = randomIndex(list.length, prev);
+			lastIndexByKey[key] = idx;
+			const valueEl = document.querySelector(`[data-card-index="${cardIndex}"] .value`);
+			if (valueEl) valueEl.textContent = list[idx];
+		}
+
+		function startSpinningCard(cardIndex) {
+			if (isSpinning[cardIndex]) return; // ya girando
+			isSpinning[cardIndex] = true;
+			const cardEl = document.querySelector(`[data-card-index="${cardIndex}"]`);
+			if (!cardEl) return;
+			cardEl.classList.add('spinning');
+			cardEl.classList.remove('stopped');
+			// Previene intervalos duplicados si hubiese alguno residual
+			if (intervals[cardIndex]) {
+				clearInterval(intervals[cardIndex]);
+				intervals[cardIndex] = null;
+			}
+			pickAndSet(cardIndex);
+			intervals[cardIndex] = setInterval(() => pickAndSet(cardIndex), 120);
+		}
+
+		function stopSpinningCard(cardIndex) {
+			if (!isSpinning[cardIndex]) return; // ya detenido
+			isSpinning[cardIndex] = false;
+			const cardEl = document.querySelector(`[data-card-index="${cardIndex}"]`);
+			if (cardEl) {
+				cardEl.classList.remove('spinning');
+				cardEl.classList.add('stopped');
+			}
+			if (intervals[cardIndex]) {
+				clearInterval(intervals[cardIndex]);
+				intervals[cardIndex] = null;
+			}
+		}
+
+		function startSpinningAll() {
+			for (let i = 0; i < activeBlocks.length; i++) {
+				startSpinningCard(i);
+			}
+			updateToggleAllLabel();
+		}
+
+		function stopSpinningAll() {
+			for (let i = 0; i < activeBlocks.length; i++) {
+				stopSpinningCard(i);
+			}
+			updateToggleAllLabel();
+		}
+
+		function updateToggleAllLabel() {
+			const anySpinning = isSpinning.some(Boolean);
+			document.getElementById('toggle-all').textContent = anySpinning ? 'Detener todas' : 'Volver a girar';
+		}
+
+		function cleanupBeforeRebuild() {
+			// Detener cualquier intervalo activo y limpiar clases
+			if (intervals && intervals.length) {
+				for (let i = 0; i < intervals.length; i++) {
+					if (intervals[i]) clearInterval(intervals[i]);
+				}
+			}
+			// Quitar animaciones de cartas existentes
+			document.querySelectorAll('.card.spinning').forEach(el => el.classList.remove('spinning'));
+			document.querySelectorAll('.card.stopped').forEach(el => el.classList.remove('stopped'));
+			// Resetear índices previos
+			for (const key in lastIndexByKey) delete lastIndexByKey[key];
+		}
+
+		function getActiveBlocks() {
+			const blocks = [...BASE_DATA];
+			
+			// Básicas
+			if (advancedSelections.tematica) blocks.push(ADVANCED_DATA.tematica);
+			if (advancedSelections.especie) blocks.push(ADVANCED_DATA.especie);
+			if (advancedSelections.alineamiento) blocks.push(ADVANCED_DATA.alineamiento);
+			if (advancedSelections.objeto) blocks.push(ADVANCED_DATA.objeto);
+			if (advancedSelections.genero) blocks.push(ADVANCED_DATA.genero);
+			if (advancedSelections.orientacion) blocks.push(ADVANCED_DATA.orientacion);
+			if (advancedSelections.formato) blocks.push(ADVANCED_DATA.formato);
+			
+			// Estilos
+			if (advancedSelections.estiloAutor) blocks.push(ADVANCED_DATA.estiloAutor);
+			if (advancedSelections.tipoEstilo) blocks.push(ADVANCED_DATA.tipoEstilo);
+			
+			// Características físicas
+			if (advancedSelections.edad) blocks.push(ADVANCED_DATA.edad);
+			if (advancedSelections.altura) blocks.push(ADVANCED_DATA.altura);
+			if (advancedSelections.complexion) blocks.push(ADVANCED_DATA.complexion);
+			if (advancedSelections.caracteristicas) blocks.push(ADVANCED_DATA.caracteristicas);
+			
+			// Antecedentes
+			if (advancedSelections.claseSocial) blocks.push(ADVANCED_DATA.claseSocial);
+			if (advancedSelections.origen) blocks.push(ADVANCED_DATA.origen);
+			if (advancedSelections.educacion) blocks.push(ADVANCED_DATA.educacion);
+			if (advancedSelections.historiaFamiliar) blocks.push(ADVANCED_DATA.historiaFamiliar);
+			
+			// Motivaciones
+			if (advancedSelections.motivacion) blocks.push(ADVANCED_DATA.motivacion);
+			if (advancedSelections.objetivoCorto) blocks.push(ADVANCED_DATA.objetivoCorto);
+			if (advancedSelections.sueno) blocks.push(ADVANCED_DATA.sueno);
+			
+			// Relaciones
+			if (advancedSelections.estadoCivil) blocks.push(ADVANCED_DATA.estadoCivil);
+			if (advancedSelections.relacionFamiliar) blocks.push(ADVANCED_DATA.relacionFamiliar);
+			if (advancedSelections.conexionSocial) blocks.push(ADVANCED_DATA.conexionSocial);
+			
+			// Habilidades
+			if (advancedSelections.habilidadEspecial) blocks.push(ADVANCED_DATA.habilidadEspecial);
+			if (advancedSelections.talentoArtistico) blocks.push(ADVANCED_DATA.talentoArtistico);
+			if (advancedSelections.conocimiento) blocks.push(ADVANCED_DATA.conocimiento);
+			
+			// Debilidades
+			if (advancedSelections.miedo) blocks.push(ADVANCED_DATA.miedo);
+			if (advancedSelections.vicio) blocks.push(ADVANCED_DATA.vicio);
+			if (advancedSelections.trauma) blocks.push(ADVANCED_DATA.trauma);
+			
+			// Entorno
+			if (advancedSelections.epoca) blocks.push(ADVANCED_DATA.epoca);
+			if (advancedSelections.clima) blocks.push(ADVANCED_DATA.clima);
+			if (advancedSelections.entornoUrbano) blocks.push(ADVANCED_DATA.entornoUrbano);
+			
+			// Elementos narrativos
+			if (advancedSelections.tipoConflicto) blocks.push(ADVANCED_DATA.tipoConflicto);
+			if (advancedSelections.arcoPersonaje) blocks.push(ADVANCED_DATA.arcoPersonaje);
+			if (advancedSelections.funcionTrama) blocks.push(ADVANCED_DATA.funcionTrama);
+			
+			// Características únicas
+			if (advancedSelections.poder) blocks.push(ADVANCED_DATA.poder);
+			if (advancedSelections.condicion) blocks.push(ADVANCED_DATA.condicion);
+			if (advancedSelections.marca) blocks.push(ADVANCED_DATA.marca);
+			
+			// Elementos culturales
+			if (advancedSelections.religion) blocks.push(ADVANCED_DATA.religion);
+			if (advancedSelections.cultura) blocks.push(ADVANCED_DATA.cultura);
+			if (advancedSelections.valores) blocks.push(ADVANCED_DATA.valores);
+			
+			return blocks;
+		}
+
+		function buildCards() {
+			const results = document.getElementById('results');
+			results.innerHTML = '';
+			cleanupBeforeRebuild();
+			activeBlocks = getActiveBlocks();
+			isSpinning = new Array(activeBlocks.length).fill(false);
+			intervals = new Array(activeBlocks.length).fill(null);
+			activeBlocks.forEach(({ key, accent }, idx) => {
+				const card = document.createElement('div');
+				card.className = 'card spinning';
+				card.setAttribute('data-accent', accent);
+				card.setAttribute('data-card-index', String(idx));
+				card.innerHTML = `<div class="label">${key}</div><div class="value"></div>`;
+				card.addEventListener('click', () => {
+					// Un clic ahora alterna: detener/reanudar esa carta
+					if (isSpinning[idx]) {
+						stopSpinningCard(idx);
+					} else {
+						startSpinningCard(idx);
+					}
+					updateToggleAllLabel();
+				});
+				results.appendChild(card);
+			});
+
+			// Inicia el giro de todas
+			for (let i = 0; i < activeBlocks.length; i++) {
+				isSpinning[i] = false; // forzar start
+				startSpinningCard(i);
+			}
+			updateToggleAllLabel();
+		}
+
+		document.getElementById('toggle-all').addEventListener('click', () => {
+			const anySpinning = isSpinning.some(Boolean);
+			if (anySpinning) stopSpinningAll(); else startSpinningAll();
+		});
+
+		// Listeners de opciones avanzadas
+		// Básicas
+		document.getElementById('adv-tematica').addEventListener('change', (e) => {
+			advancedSelections.tematica = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-especie').addEventListener('change', (e) => {
+			advancedSelections.especie = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-alineamiento').addEventListener('change', (e) => {
+			advancedSelections.alineamiento = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-objeto').addEventListener('change', (e) => {
+			advancedSelections.objeto = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-genero').addEventListener('change', (e) => {
+			advancedSelections.genero = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-orientacion').addEventListener('change', (e) => {
+			advancedSelections.orientacion = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-formato').addEventListener('change', (e) => {
+			advancedSelections.formato = e.target.checked;
+			buildCards();
+		});
+
+		// Estilos
+		document.getElementById('adv-estilo-autor').addEventListener('change', (e) => {
+			advancedSelections.estiloAutor = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-tipo-estilo').addEventListener('change', (e) => {
+			advancedSelections.tipoEstilo = e.target.checked;
+			buildCards();
+		});
+
+		// Características físicas
+		document.getElementById('adv-edad').addEventListener('change', (e) => {
+			advancedSelections.edad = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-altura').addEventListener('change', (e) => {
+			advancedSelections.altura = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-complexion').addEventListener('change', (e) => {
+			advancedSelections.complexion = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-caracteristicas').addEventListener('change', (e) => {
+			advancedSelections.caracteristicas = e.target.checked;
+			buildCards();
+		});
+
+		// Antecedentes
+		document.getElementById('adv-clase-social').addEventListener('change', (e) => {
+			advancedSelections.claseSocial = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-origen').addEventListener('change', (e) => {
+			advancedSelections.origen = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-educacion').addEventListener('change', (e) => {
+			advancedSelections.educacion = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-historia-familiar').addEventListener('change', (e) => {
+			advancedSelections.historiaFamiliar = e.target.checked;
+			buildCards();
+		});
+
+		// Motivaciones
+		document.getElementById('adv-motivacion').addEventListener('change', (e) => {
+			advancedSelections.motivacion = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-objetivo-corto').addEventListener('change', (e) => {
+			advancedSelections.objetivoCorto = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-sueno').addEventListener('change', (e) => {
+			advancedSelections.sueno = e.target.checked;
+			buildCards();
+		});
+
+		// Relaciones
+		document.getElementById('adv-estado-civil').addEventListener('change', (e) => {
+			advancedSelections.estadoCivil = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-relacion-familiar').addEventListener('change', (e) => {
+			advancedSelections.relacionFamiliar = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-conexion-social').addEventListener('change', (e) => {
+			advancedSelections.conexionSocial = e.target.checked;
+			buildCards();
+		});
+
+		// Habilidades
+		document.getElementById('adv-habilidad-especial').addEventListener('change', (e) => {
+			advancedSelections.habilidadEspecial = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-talento-artistico').addEventListener('change', (e) => {
+			advancedSelections.talentoArtistico = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-conocimiento').addEventListener('change', (e) => {
+			advancedSelections.conocimiento = e.target.checked;
+			buildCards();
+		});
+
+		// Debilidades
+		document.getElementById('adv-miedo').addEventListener('change', (e) => {
+			advancedSelections.miedo = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-vicio').addEventListener('change', (e) => {
+			advancedSelections.vicio = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-trauma').addEventListener('change', (e) => {
+			advancedSelections.trauma = e.target.checked;
+			buildCards();
+		});
+
+		// Entorno
+		document.getElementById('adv-epoca').addEventListener('change', (e) => {
+			advancedSelections.epoca = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-clima').addEventListener('change', (e) => {
+			advancedSelections.clima = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-entorno-urbano').addEventListener('change', (e) => {
+			advancedSelections.entornoUrbano = e.target.checked;
+			buildCards();
+		});
+
+		// Elementos narrativos
+		document.getElementById('adv-tipo-conflicto').addEventListener('change', (e) => {
+			advancedSelections.tipoConflicto = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-arco-personaje').addEventListener('change', (e) => {
+			advancedSelections.arcoPersonaje = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-funcion-trama').addEventListener('change', (e) => {
+			advancedSelections.funcionTrama = e.target.checked;
+			buildCards();
+		});
+
+		// Características únicas
+		document.getElementById('adv-poder').addEventListener('change', (e) => {
+			advancedSelections.poder = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-condicion').addEventListener('change', (e) => {
+			advancedSelections.condicion = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-marca').addEventListener('change', (e) => {
+			advancedSelections.marca = e.target.checked;
+			buildCards();
+		});
+
+		// Elementos culturales
+		document.getElementById('adv-religion').addEventListener('change', (e) => {
+			advancedSelections.religion = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-cultura').addEventListener('change', (e) => {
+			advancedSelections.cultura = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-valores').addEventListener('change', (e) => {
+			advancedSelections.valores = e.target.checked;
+			buildCards();
+		});
+
+		// Funciones para control de checkboxes avanzados
+		function selectAllAdvanced() {
+			Object.keys(advancedSelections).forEach(key => {
+				advancedSelections[key] = true;
+				const checkbox = document.getElementById(`adv-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+				if (checkbox) checkbox.checked = true;
+			});
+			buildCards();
+		}
+
+		function deselectAllAdvanced() {
+			Object.keys(advancedSelections).forEach(key => {
+				advancedSelections[key] = false;
+				const checkbox = document.getElementById(`adv-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+				if (checkbox) checkbox.checked = false;
+			});
+			buildCards();
+		}
+
+		function selectSectionBasicas() {
+			// Desmarcar todas primero
+			deselectAllAdvanced();
+			// Marcar solo las básicas
+			const basicas = ['tematica', 'especie', 'alineamiento', 'objeto', 'genero', 'orientacion', 'formato'];
+			basicas.forEach(key => {
+				advancedSelections[key] = true;
+				const checkbox = document.getElementById(`adv-${key}`);
+				if (checkbox) checkbox.checked = true;
+			});
+			buildCards();
+		}
+
+		function selectSectionEstilos() {
+			// Desmarcar todas primero
+			deselectAllAdvanced();
+			// Marcar solo los estilos
+			const estilos = ['estiloAutor', 'tipoEstilo'];
+			estilos.forEach(key => {
+				advancedSelections[key] = true;
+				const checkbox = document.getElementById(`adv-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+				if (checkbox) checkbox.checked = true;
+			});
+			buildCards();
+		}
+
+		// Event listeners para botones de control
+		document.getElementById('select-all-advanced').addEventListener('click', selectAllAdvanced);
+		document.getElementById('deselect-all-advanced').addEventListener('click', deselectAllAdvanced);
+		document.getElementById('select-section-basicas').addEventListener('click', selectSectionBasicas);
+		document.getElementById('select-section-estilos').addEventListener('click', selectSectionEstilos);
+
+		// Construir e iniciar al cargar
+		buildCards();
+	</script>
+</body>
+</html>
+
+
