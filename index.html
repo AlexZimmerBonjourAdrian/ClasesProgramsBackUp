@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Generador de Personajes</title>
+	<style>
+		:root {
+			--fg: #e5e7eb;
+			--muted: #94a3b8;
+			--accent: #ffffff;
+			--c1: #ef4444; /* Rol */
+			--c1b: #b91c1c;
+			--c2: #f59e0b; /* Profesión */
+			--c2b: #b45309;
+			--c3: #10b981; /* Interno */
+			--c3b: #065f46;
+			--c4: #3b82f6; /* Externo */
+			--c4b: #1e40af;
+			--c5: #a855f7; /* Temática */
+			--c5b: #6b21a8;
+			--c6: #ec4899; /* Especie */
+			--c6b: #9d174d;
+			--c7: #14b8a6; /* Alineamiento moral */
+			--c7b: #0f766e;
+			--c8: #f43f5e; /* Objeto de interés */
+			--c8b: #9f1239;
+		}
+
+		html, body {
+			margin: 0;
+			min-height: 100%;
+			background: radial-gradient(1200px 800px at 100% -10%, #312e81 0%, #0b1020 45%), linear-gradient(180deg, #0b1020, #0b1020);
+			color: var(--fg);
+			font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+		}
+
+		.container {
+			max-width: 680px;
+			margin: 0 auto;
+			padding: 28px 20px 36px;
+		}
+
+		h1 {
+			font-size: 32px;
+			margin: 0 0 6px 0;
+			letter-spacing: .2px;
+		}
+
+		.subtitle {
+			color: var(--muted);
+			margin: 0 0 22px 0;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 14px;
+		}
+
+		.card {
+			border-radius: 16px;
+			padding: 16px 18px;
+			display: grid;
+			gap: 8px;
+			color: #ffffff;
+			box-shadow: 0 8px 24px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
+			transform: translateZ(0);
+		}
+
+		/* Efecto minimal de "giro" (pulso) mientras está generando */
+		@keyframes pulseSpin {
+			0% { transform: scale(1); opacity: .8; }
+			50% { transform: scale(1.02); opacity: 1; }
+			100% { transform: scale(1); opacity: .85; }
+		}
+
+		.card.spinning { animation: pulseSpin .7s ease-in-out infinite; }
+		.card.stopped { animation: none !important; }
+
+		.card[data-accent="c1"] { background: linear-gradient(145deg, var(--c1), var(--c1b)); }
+		.card[data-accent="c2"] { background: linear-gradient(145deg, var(--c2), var(--c2b)); }
+		.card[data-accent="c3"] { background: linear-gradient(145deg, var(--c3), var(--c3b)); }
+		.card[data-accent="c4"] { background: linear-gradient(145deg, var(--c4), var(--c4b)); }
+		.card[data-accent="c5"] { background: linear-gradient(145deg, var(--c5), var(--c5b)); }
+		.card[data-accent="c6"] { background: linear-gradient(145deg, var(--c6), var(--c6b)); }
+		.card[data-accent="c7"] { background: linear-gradient(145deg, var(--c7), var(--c7b)); }
+		.card[data-accent="c8"] { background: linear-gradient(145deg, var(--c8), var(--c8b)); }
+
+		.label {
+			font-size: 12px;
+			text-transform: uppercase;
+			letter-spacing: 0.12em;
+			color: rgba(255,255,255,.85);
+			text-shadow: 0 1px 0 rgba(0,0,0,.25);
+		}
+
+		.value {
+			font-size: 20px;
+			font-weight: 800;
+			line-height: 1.3;
+			text-shadow: 0 1px 0 rgba(0,0,0,.28);
+		}
+
+		.actions {
+			margin-top: 24px;
+		}
+
+		button {
+			background: linear-gradient(145deg, #22d3ee, #3b82f6);
+			color: #001018;
+			border: none;
+			padding: 14px 18px;
+			border-radius: 12px;
+			cursor: pointer;
+			font-weight: 800;
+			letter-spacing: .2px;
+			box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.45);
+		}
+
+		button:focus { outline: 2px solid #22d3ee; outline-offset: 2px; }
+		button:hover { filter: brightness(1.04); }
+
+		@media (min-width: 640px) {
+			.grid { grid-template-columns: repeat(2, 1fr); }
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Personaje</h1>
+		<p class="subtitle">Genera un personaje con rol, profesión y rasgos internos/externos.</p>
+
+		<details class="advanced" style="margin: 10px 0 18px 0;">
+			<summary style="cursor: pointer; color: var(--fg);">Opciones avanzadas</summary>
+			<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; padding-top: 10px; color: var(--fg);">
+				<label><input type="checkbox" id="adv-tematica" /> Temática</label>
+				<label><input type="checkbox" id="adv-especie" /> Especie</label>
+				<label><input type="checkbox" id="adv-alineamiento" /> Alineamiento moral</label>
+				<label><input type="checkbox" id="adv-objeto" /> Objeto de interés</label>
+			</div>
+		</details>
+
+		<div id="results" class="grid" aria-live="polite"></div>
+
+		<div class="actions">
+			<button id="toggle-all">Detener todas</button>
+		</div>
+	</div>
+
+	<script>
+		// Datos base
+		const BASE_DATA = [
+			{ key: 'Rol', accent: 'c1', list: [
+				'protagonista','antagonista','deuteragonista','tritagonista','mentor','aliado','confidente','heraldo','guardián del umbral','embaucador','sombra','tentador','villano','antihéroe','líder','seguidor leal','traidor','mártir','cuidador','sabio','explorador','rebelde','visionario','forajido','justiciero','investigador','protector','usurpador','narrador'
+			] },
+			{ key: 'Profesión', accent: 'c2', list: [
+				'médico','enfermero','psicólogo','psiquiatra','trabajador social','fisioterapeuta','paramédico','bombero','policía','abogado','juez','procurador','contador','economista','administrador','profesor de primaria','profesor de secundaria','catedrático','investigador','científico','biólogo','químico','físico','geólogo','meteorólogo','arquitecto','urbanista','topógrafo','ingeniero civil','ingeniero mecánico','ingeniero eléctrico','ingeniero industrial','ingeniero químico','ingeniero informático','programador','desarrollador web','analista de datos','científico de datos','administrador de sistemas','técnico de soporte','electricista','carpintero','fontanero','soldador','albañil','pintor de casas','mecánico automotriz','técnico de laboratorio','panadero','pastelero','cocinero','chef','camarero','barista','sommelier','carnicero','pescador','agricultor','ganadero','jardinero','paisajista','repartidor','mensajero','conductor de autobús','taxista','piloto comercial','tripulante de cabina','controlador aéreo','fotógrafo','periodista','editor','diseñador gráfico','ilustrador','diseñador de moda','sastre','peluquero','maquillador','actor','músico','cantante','compositor','director de cine','director de teatro','coreógrafo','bibliotecario','archivero','museólogo','curador de arte','arqueólogo','historiador','traductor','intérprete','guía turístico','recepcionista','gerente de tienda','vendedor','cajero','logista','almacenista','guardia de seguridad','detective privado','criminólogo','veterinario','cuidador de animales','entrenador canino','apicultor','joyero','relojero','minero','obrero de fábrica','piloto de drones'
+			] },
+			{ key: 'Interno', accent: 'c3', list: [
+				'ambicioso','inseguro','idealista','pragmático','impulsivo','paciente','perfeccionista','paranoico','valiente','orgulloso','curioso','empático','frío','obstinado','creativo','melancólico','resiliente','introvertido','extrovertido','cínico','ingenuo','racional','emocional','disciplinado','caótico','calculador','temerario','cauteloso','perseverante','apático','compasivo','reservado','irascible','leal','desconfiado','optimista','pesimista','audaz','humilde','controlador','independiente'
+			] },
+			{ key: 'Externo', accent: 'c4', list: [
+				'peligroso','admirado','subestimado','famoso','infame','misterioso','confiable','amenazante','carismático','torpe','elegante','ruidoso','discreto','extravagante','respetado','temido','popular','desconocido','polémico','influyente','accesible','distante','imponente','humilde','mediático','notorio','caritativo','autoritario','servicial','arrogante','simpático','antipático','diligente','caótico','estricto','flexible','provocador','solemne','jovial','sobrio'
+			] }
+		];
+
+		// Datos avanzados
+		const ADVANCED_DATA = {
+			tematica: { key: 'Temática', accent: 'c5', list: [
+				'fantasía','ciencia ficción','histórico','noir','superhéroes','postapocalíptico','steampunk','ciberpunk','western','terror','misterio','romance','aventura','thriller','comedia','slice of life','mitología','espionaje','policíaco','distopía','space opera','ucronía','bélico','drama','surrealista'
+			] },
+			especie: { key: 'Especie', accent: 'c6', list: [
+				'humano','elfo','enano','orco','vampiro','hada','ángel','demonio','androide','alienígena','metamorfo','licántropo','gnomo','trasgo','sirena','ciborg','driada','centauro','medusa','dragón'
+			] },
+			alineamiento: { key: 'Alineamiento moral', accent: 'c7', list: [
+				'legal bueno','neutral bueno','caótico bueno','legal neutral','neutral verdadero','caótico neutral','legal malvado','neutral malvado','caótico malvado'
+			] },
+			objeto: { key: 'Objeto de interés', accent: 'c8', list: [
+				'llave antigua','mapa incompleto','reloj de bolsillo','medallón familiar','caja musical','diario perdido','anillo con inscripción','brújula que no apunta al norte','pluma estilográfica','cámara analógica','cáliz agrietado','botella con mensaje','tarjeta perforada','chip misterioso','gema opalescente','libro encadenado','máscara ritual','moneda con error','fotografía descolorida','llave USB encriptada','caja fuerte portátil','amuletos rotos','navaja grabada','linterna eterna','orbe de cristal','estatuilla de jade','piedra imantada','panfleto antiguo','billete fuera de circulación','sello de cera','tiza azul','naipes marcados','radiotransmisor','prisma arcoíris','espejo biselado','llavero con coordenadas','broche real','pergamino sellado','concha parlante','frasco fosforescente'
+			] }
+		};
+
+		const advancedSelections = { tematica: false, especie: false, alineamiento: false, objeto: false };
+		let activeBlocks = [];
+		let isSpinning = [];
+		let intervals = [];
+
+		// Recordar último índice por clave para evitar repetición inmediata
+		const lastIndexByKey = {};
+
+		// (definidos dinámicamente en buildCards)
+
+		function randomIndex(size, avoidIndex = -1) {
+			if (size <= 1) return 0;
+			let idx = Math.floor(Math.random() * size);
+			if (idx === avoidIndex) idx = (idx + 1) % size;
+			return idx;
+		}
+
+		function pickAndSet(cardIndex) {
+			const { key, list } = activeBlocks[cardIndex];
+			const prev = lastIndexByKey[key] ?? -1;
+			const idx = randomIndex(list.length, prev);
+			lastIndexByKey[key] = idx;
+			const valueEl = document.querySelector(`[data-card-index="${cardIndex}"] .value`);
+			if (valueEl) valueEl.textContent = list[idx];
+		}
+
+		function startSpinningCard(cardIndex) {
+			if (isSpinning[cardIndex]) return; // ya girando
+			isSpinning[cardIndex] = true;
+			const cardEl = document.querySelector(`[data-card-index="${cardIndex}"]`);
+			if (!cardEl) return;
+			cardEl.classList.add('spinning');
+			cardEl.classList.remove('stopped');
+			// Previene intervalos duplicados si hubiese alguno residual
+			if (intervals[cardIndex]) {
+				clearInterval(intervals[cardIndex]);
+				intervals[cardIndex] = null;
+			}
+			pickAndSet(cardIndex);
+			intervals[cardIndex] = setInterval(() => pickAndSet(cardIndex), 120);
+		}
+
+		function stopSpinningCard(cardIndex) {
+			if (!isSpinning[cardIndex]) return; // ya detenido
+			isSpinning[cardIndex] = false;
+			const cardEl = document.querySelector(`[data-card-index="${cardIndex}"]`);
+			if (cardEl) {
+				cardEl.classList.remove('spinning');
+				cardEl.classList.add('stopped');
+			}
+			if (intervals[cardIndex]) {
+				clearInterval(intervals[cardIndex]);
+				intervals[cardIndex] = null;
+			}
+		}
+
+		function startSpinningAll() {
+			for (let i = 0; i < activeBlocks.length; i++) {
+				startSpinningCard(i);
+			}
+			updateToggleAllLabel();
+		}
+
+		function stopSpinningAll() {
+			for (let i = 0; i < activeBlocks.length; i++) {
+				stopSpinningCard(i);
+			}
+			updateToggleAllLabel();
+		}
+
+		function updateToggleAllLabel() {
+			const anySpinning = isSpinning.some(Boolean);
+			document.getElementById('toggle-all').textContent = anySpinning ? 'Detener todas' : 'Volver a girar';
+		}
+
+		function cleanupBeforeRebuild() {
+			// Detener cualquier intervalo activo y limpiar clases
+			if (intervals && intervals.length) {
+				for (let i = 0; i < intervals.length; i++) {
+					if (intervals[i]) clearInterval(intervals[i]);
+				}
+			}
+			// Quitar animaciones de cartas existentes
+			document.querySelectorAll('.card.spinning').forEach(el => el.classList.remove('spinning'));
+			document.querySelectorAll('.card.stopped').forEach(el => el.classList.remove('stopped'));
+			// Resetear índices previos
+			for (const key in lastIndexByKey) delete lastIndexByKey[key];
+		}
+
+		function getActiveBlocks() {
+			const blocks = [...BASE_DATA];
+			if (advancedSelections.tematica) blocks.push(ADVANCED_DATA.tematica);
+			if (advancedSelections.especie) blocks.push(ADVANCED_DATA.especie);
+			if (advancedSelections.alineamiento) blocks.push(ADVANCED_DATA.alineamiento);
+			if (advancedSelections.objeto) blocks.push(ADVANCED_DATA.objeto);
+			return blocks;
+		}
+
+		function buildCards() {
+			const results = document.getElementById('results');
+			results.innerHTML = '';
+			cleanupBeforeRebuild();
+			activeBlocks = getActiveBlocks();
+			isSpinning = new Array(activeBlocks.length).fill(false);
+			intervals = new Array(activeBlocks.length).fill(null);
+			activeBlocks.forEach(({ key, accent }, idx) => {
+				const card = document.createElement('div');
+				card.className = 'card spinning';
+				card.setAttribute('data-accent', accent);
+				card.setAttribute('data-card-index', String(idx));
+				card.innerHTML = `<div class="label">${key}</div><div class="value"></div>`;
+				card.addEventListener('click', () => {
+					// Un clic ahora alterna: detener/reanudar esa carta
+					if (isSpinning[idx]) {
+						stopSpinningCard(idx);
+					} else {
+						startSpinningCard(idx);
+					}
+					updateToggleAllLabel();
+				});
+				results.appendChild(card);
+			});
+
+			// Inicia el giro de todas
+			for (let i = 0; i < activeBlocks.length; i++) {
+				isSpinning[i] = false; // forzar start
+				startSpinningCard(i);
+			}
+			updateToggleAllLabel();
+		}
+
+		document.getElementById('toggle-all').addEventListener('click', () => {
+			const anySpinning = isSpinning.some(Boolean);
+			if (anySpinning) stopSpinningAll(); else startSpinningAll();
+		});
+
+		// Listeners de opciones avanzadas
+		document.getElementById('adv-tematica').addEventListener('change', (e) => {
+			advancedSelections.tematica = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-especie').addEventListener('change', (e) => {
+			advancedSelections.especie = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-alineamiento').addEventListener('change', (e) => {
+			advancedSelections.alineamiento = e.target.checked;
+			buildCards();
+		});
+		document.getElementById('adv-objeto').addEventListener('change', (e) => {
+			advancedSelections.objeto = e.target.checked;
+			buildCards();
+		});
+
+		// Construir e iniciar al cargar
+		buildCards();
+	</script>
+</body>
+</html>
+
+
