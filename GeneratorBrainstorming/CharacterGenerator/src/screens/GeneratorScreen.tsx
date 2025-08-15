@@ -9,6 +9,7 @@ import {
   Dimensions,
   Alert,
   Modal,
+  Platform,
 } from 'react-native';
 import { useCharacterGenerator } from '../hooks/useCharacterGenerator';
 import CharacterCard from '../components/CharacterCard';
@@ -248,7 +249,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 16,
+    paddingBottom: Platform.OS === 'android' ? 20 : 16, // Margen extra para Android
     gap: 12,
+    backgroundColor: '#0b1020', // Asegurar que el fondo sea consistente
   },
   toggleButton: {
     flex: 1,
