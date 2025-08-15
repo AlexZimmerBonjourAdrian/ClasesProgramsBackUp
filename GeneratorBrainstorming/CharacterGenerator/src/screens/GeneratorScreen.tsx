@@ -8,9 +8,12 @@ import {
   SafeAreaView,
   Dimensions,
   Alert,
+  Modal,
 } from 'react-native';
 import { useCharacterGenerator } from '../hooks/useCharacterGenerator';
 import CharacterCard from '../components/CharacterCard';
+import AdvancedSettingsScreen from '../components/AdvancedSettingsScreen';
+import CharacterStats from '../components/CharacterStats';
 // import { adService } from '../services/adService'; // Desactivado temporalmente
 
 const { width, height } = Dimensions.get('window');
@@ -19,13 +22,16 @@ const GeneratorScreen: React.FC = () => {
   const {
     activeBlocks,
     isSpinning,
+    advancedSelections,
     pickAndSet,
     toggleSpinningCard,
     toggleSpinningAll,
     startSpinningAll,
+    updateAdvancedSelections,
   } = useCharacterGenerator();
 
   const [cardValues, setCardValues] = useState<string[]>([]);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const intervalRefs = useRef<NodeJS.Timeout[]>([]);
 
   // Generar valores iniciales solo una vez cuando cambian los bloques activos
@@ -92,9 +98,20 @@ const GeneratorScreen: React.FC = () => {
     startSpinningAll();
   };
 
+  const handleAdvancedSettingsChange = (newSelections: any) => {
+    // Actualizar cada selección individualmente
+    Object.entries(newSelections).forEach(([key, value]) => {
+      updateAdvancedSelections(key as any, value as boolean);
+    });
+  };
+
   const getToggleButtonText = () => {
     const anySpinning = isSpinning.some(Boolean);
     return anySpinning ? 'Detener todas' : 'Volver a girar';
+  };
+
+  const getActiveCategoriesCount = () => {
+    return Object.values(advancedSelections).filter(Boolean).length;
   };
 
   return (
@@ -104,6 +121,17 @@ const GeneratorScreen: React.FC = () => {
         <Text style={styles.subtitle}>
           Genera un personaje con rol, profesión y rasgos internos/externos.
         </Text>
+        
+        {/* Botón de configuración avanzada */}
+        <TouchableOpacity
+          style={styles.advancedButton}
+          onPress={() => setShowAdvancedSettings(true)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.advancedButtonText}>
+            ⚙️ Configuración Avanzada ({getActiveCategoriesCount()})
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView 
@@ -111,6 +139,13 @@ const GeneratorScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Estadísticas */}
+        <CharacterStats
+          advancedSelections={advancedSelections}
+          activeBlocksCount={activeBlocks.length}
+          onShowAdvancedSettings={() => setShowAdvancedSettings(true)}
+        />
+
         <View style={styles.cardsContainer}>
           {activeBlocks.map((category, index) => (
             <CharacterCard
@@ -143,6 +178,19 @@ const GeneratorScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Modal de configuración avanzada */}
+      <Modal
+        visible={showAdvancedSettings}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <AdvancedSettingsScreen
+          advancedSelections={advancedSelections}
+          onAdvancedSelectionsChange={handleAdvancedSettingsChange}
+          onClose={() => setShowAdvancedSettings(false)}
+        />
+      </Modal>
+
              {/* Banner de anuncios (desactivado temporalmente) */}
        {/* <View style={styles.bannerContainer}>
          {adService.getBannerAd()}
@@ -171,7 +219,21 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#94a3b8',
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  advancedButton: {
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderWidth: 1,
+    borderColor: '#3b82f6',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  advancedButtonText: {
+    color: '#3b82f6',
+    fontSize: 14,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
