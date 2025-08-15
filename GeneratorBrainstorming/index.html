@@ -147,6 +147,14 @@
 			text-shadow: 0 1px 0 rgba(0,0,0,.28);
 		}
 
+		/* Contadores por sección */
+		.section-count {
+			font-weight: 600;
+			color: var(--muted);
+			margin-left: 6px;
+			font-size: 12px;
+		}
+
 		.actions {
 			margin-top: 24px;
 		}
@@ -194,16 +202,27 @@
 			<div class="adv-sections" style="padding-top: 10px; color: var(--fg);">
 				
 				<!-- Botones de control global -->
-				<div class="adv-controls" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+				<div class="adv-controls" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+					<!-- Presets de modo -->
+					<span style="font-size: 12px; color: var(--muted);">Modo:</span>
+					<button id="mode-quick" title="Activa 6-7 categorías básicas" style="background: linear-gradient(145deg, #22d3ee, #3b82f6); color: #001018; border: none; padding: 8px 12px; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 12px; letter-spacing: .1px;">Rápido</button>
+					<button id="mode-intermediate" title="Activa un conjunto intermedio" style="background: linear-gradient(145deg, #a78bfa, #7c3aed); color: #001018; border: none; padding: 8px 12px; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 12px; letter-spacing: .1px;">Intermedio</button>
+					<button id="mode-full" title="Activa todas las categorías" style="background: linear-gradient(145deg, #34d399, #10b981); color: #001018; border: none; padding: 8px 12px; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 12px; letter-spacing: .1px;">Completo</button>
+
+					<!-- Acciones globales -->
 					<button id="select-all-advanced" style="background: linear-gradient(145deg, #10b981, #059669); color: #001018; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; letter-spacing: .1px; box-shadow: 0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.3);">Marcar todas</button>
 					<button id="deselect-all-advanced" style="background: linear-gradient(145deg, #ef4444, #dc2626); color: #001018; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; letter-spacing: .1px; box-shadow: 0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.3);">Desmarcar todas</button>
 					<button id="select-section-basicas" style="background: linear-gradient(145deg, #a855f7, #7c3aed); color: #001018; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; letter-spacing: .1px; box-shadow: 0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.3);">Solo básicas</button>
 					<button id="select-section-estilos" style="background: linear-gradient(145deg, #f59e0b, #d97706); color: #001018; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; letter-spacing: .1px; box-shadow: 0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.3);">Solo estilos</button>
+
+					<!-- Buscador y ocultar secciones -->
+					<input id="adv-search" type="text" placeholder="Buscar categoría..." style="flex: 1 1 200px; min-width: 200px; max-width: 320px; background: rgba(255,255,255,.08); color: var(--fg); border: 1px solid rgba(255,255,255,.15); padding: 8px 10px; border-radius: 8px; font-size: 12px;">
+					<label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);"><input type="checkbox" id="hide-empty-sections"> Ocultar secciones no activas</label>
 				</div>
 				
 				<!-- Sección: Básicas -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Básicas</h4>
+			<div class="adv-section" data-section="basicas" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Básicas <span class="section-count" data-section="basicas"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 				<label><input type="checkbox" id="adv-tematica" /> Temática</label>
 				<label><input type="checkbox" id="adv-especie" /> Especie</label>
@@ -216,8 +235,8 @@
 				</div>
 
 				<!-- Sección: Estilos -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Estilos</h4>
+			<div class="adv-section" data-section="estilos" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Estilos <span class="section-count" data-section="estilos"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-estilo-autor" /> Estilo de autor</label>
 						<label><input type="checkbox" id="adv-tipo-estilo" /> Tipo de estilo</label>
@@ -225,8 +244,8 @@
 				</div>
 
 				<!-- Sección: Características físicas -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Características físicas</h4>
+			<div class="adv-section" data-section="fisicas" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Características físicas <span class="section-count" data-section="fisicas"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-edad" /> Edad</label>
 						<label><input type="checkbox" id="adv-altura" /> Altura</label>
@@ -236,8 +255,8 @@
 				</div>
 
 				<!-- Sección: Antecedentes -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Antecedentes</h4>
+			<div class="adv-section" data-section="antecedentes" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Antecedentes <span class="section-count" data-section="antecedentes"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-clase-social" /> Clase social</label>
 						<label><input type="checkbox" id="adv-origen" /> Lugar de origen</label>
@@ -247,8 +266,8 @@
 				</div>
 
 				<!-- Sección: Motivaciones -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Motivaciones</h4>
+			<div class="adv-section" data-section="motivaciones" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Motivaciones <span class="section-count" data-section="motivaciones"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-motivacion" /> Motivación principal</label>
 						<label><input type="checkbox" id="adv-objetivo-corto" /> Objetivo a corto plazo</label>
@@ -257,8 +276,8 @@
 				</div>
 
 				<!-- Sección: Relaciones -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Relaciones</h4>
+			<div class="adv-section" data-section="relaciones" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Relaciones <span class="section-count" data-section="relaciones"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-estado-civil" /> Estado civil</label>
 						<label><input type="checkbox" id="adv-relacion-familiar" /> Relación familiar</label>
@@ -267,8 +286,8 @@
 				</div>
 
 				<!-- Sección: Habilidades -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Habilidades</h4>
+			<div class="adv-section" data-section="habilidades" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Habilidades <span class="section-count" data-section="habilidades"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-habilidad-especial" /> Habilidad especial</label>
 						<label><input type="checkbox" id="adv-talento-artistico" /> Talento artístico</label>
@@ -277,8 +296,8 @@
 				</div>
 
 				<!-- Sección: Debilidades -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Debilidades</h4>
+			<div class="adv-section" data-section="debilidades" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Debilidades <span class="section-count" data-section="debilidades"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-miedo" /> Miedo</label>
 						<label><input type="checkbox" id="adv-vicio" /> Vicio</label>
@@ -287,8 +306,8 @@
 				</div>
 
 				<!-- Sección: Entorno -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Entorno</h4>
+			<div class="adv-section" data-section="entorno" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Entorno <span class="section-count" data-section="entorno"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-epoca" /> Época</label>
 						<label><input type="checkbox" id="adv-clima" /> Clima</label>
@@ -297,8 +316,8 @@
 				</div>
 
 				<!-- Sección: Elementos narrativos -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Elementos narrativos</h4>
+			<div class="adv-section" data-section="narrativos" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Elementos narrativos <span class="section-count" data-section="narrativos"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-tipo-conflicto" /> Tipo de conflicto</label>
 						<label><input type="checkbox" id="adv-arco-personaje" /> Arco de personaje</label>
@@ -307,8 +326,8 @@
 				</div>
 
 				<!-- Sección: Características únicas -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Características únicas</h4>
+			<div class="adv-section" data-section="unicas" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Características únicas <span class="section-count" data-section="unicas"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-poder" /> Poder/Don</label>
 						<label><input type="checkbox" id="adv-condicion" /> Condición especial</label>
@@ -317,8 +336,8 @@
 				</div>
 
 				<!-- Sección: Elementos culturales -->
-				<div class="adv-section" style="margin-bottom: 20px;">
-					<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Elementos culturales</h4>
+			<div class="adv-section" data-section="culturales" style="margin-bottom: 20px;">
+				<h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;">Elementos culturales <span class="section-count" data-section="culturales"></span></h4>
 					<div class="adv-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
 						<label><input type="checkbox" id="adv-religion" /> Religión</label>
 						<label><input type="checkbox" id="adv-cultura" /> Cultura</label>
@@ -688,6 +707,48 @@
 			return blocks;
 		}
 
+		// Utilidades de UI avanzadas (contadores, ocultar secciones, búsqueda)
+		function updateSectionCountsAndVisibility() {
+			const sectionToKeys = {
+				basicas: ['tematica','especie','alineamiento','objeto','genero','orientacion','formato'],
+				estilos: ['estiloAutor','tipoEstilo'],
+				fisicas: ['edad','altura','complexion','caracteristicas'],
+				antecedentes: ['claseSocial','origen','educacion','historiaFamiliar'],
+				motivaciones: ['motivacion','objetivoCorto','sueno'],
+				relaciones: ['estadoCivil','relacionFamiliar','conexionSocial'],
+				habilidades: ['habilidadEspecial','talentoArtistico','conocimiento'],
+				debilidades: ['miedo','vicio','trauma'],
+				entorno: ['epoca','clima','entornoUrbano'],
+				narrativos: ['tipoConflicto','arcoPersonaje','funcionTrama'],
+				unicas: ['poder','condicion','marca'],
+				culturales: ['religion','cultura','valores']
+			};
+
+			const hideEmpty = document.getElementById('hide-empty-sections')?.checked;
+			Object.entries(sectionToKeys).forEach(([section, keys]) => {
+				const count = keys.reduce((acc, k) => acc + (advancedSelections[k] ? 1 : 0), 0);
+				const countEl = document.querySelector(`.section-count[data-section="${section}"]`);
+				if (countEl) countEl.textContent = `(${count}/${keys.length})`;
+				const sectionEl = document.querySelector(`.adv-section[data-section="${section}"]`);
+				if (sectionEl) {
+					if (hideEmpty && count === 0) {
+						sectionEl.style.display = 'none';
+					} else {
+						sectionEl.style.display = '';
+					}
+				}
+			});
+		}
+
+		function applyAdvancedSearchFilter() {
+			const query = document.getElementById('adv-search')?.value?.toLowerCase()?.trim() || '';
+			const allLabels = document.querySelectorAll('.adv-section .adv-grid label');
+			allLabels.forEach(label => {
+				const text = label.textContent.toLowerCase();
+				label.style.display = query && !text.includes(query) ? 'none' : '';
+			});
+		}
+
 		function buildCards() {
 			const results = document.getElementById('results');
 			results.innerHTML = '';
@@ -719,12 +780,18 @@
 				startSpinningCard(i);
 			}
 			updateToggleAllLabel();
+			updateSectionCountsAndVisibility();
+			applyAdvancedSearchFilter();
 		}
 
 		document.getElementById('toggle-all').addEventListener('click', () => {
 			const anySpinning = isSpinning.some(Boolean);
 			if (anySpinning) stopSpinningAll(); else startSpinningAll();
 		});
+
+		// Listeners de UI avanzada
+		document.getElementById('hide-empty-sections').addEventListener('change', updateSectionCountsAndVisibility);
+		document.getElementById('adv-search').addEventListener('input', applyAdvancedSearchFilter);
 
 		// Listeners de opciones avanzadas
 		// Básicas
@@ -960,11 +1027,40 @@
 			buildCards();
 		}
 
+		// Modos predefinidos
+		function setModeQuick() {
+			deselectAllAdvanced();
+			['tematica','especie','alineamiento','objeto','genero','orientacion','formato'].forEach(key => {
+				advancedSelections[key] = true;
+				const cb = document.getElementById(`adv-${key}`);
+				if (cb) cb.checked = true;
+			});
+			buildCards();
+		}
+
+		function setModeIntermediate() {
+			deselectAllAdvanced();
+			const keys = ['tematica','especie','alineamiento','objeto','genero','orientacion','formato','motivacion','objetivoCorto','sueno','tipoConflicto','arcoPersonaje','funcionTrama','estiloAutor','tipoEstilo'];
+			keys.forEach(key => {
+				advancedSelections[key] = true;
+				const cb = document.getElementById(`adv-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+				if (cb) cb.checked = true;
+			});
+			buildCards();
+		}
+
+		function setModeFull() {
+			selectAllAdvanced();
+		}
+
 		// Event listeners para botones de control
 		document.getElementById('select-all-advanced').addEventListener('click', selectAllAdvanced);
 		document.getElementById('deselect-all-advanced').addEventListener('click', deselectAllAdvanced);
 		document.getElementById('select-section-basicas').addEventListener('click', selectSectionBasicas);
 		document.getElementById('select-section-estilos').addEventListener('click', selectSectionEstilos);
+		document.getElementById('mode-quick').addEventListener('click', setModeQuick);
+		document.getElementById('mode-intermediate').addEventListener('click', setModeIntermediate);
+		document.getElementById('mode-full').addEventListener('click', setModeFull);
 
 		// Construir e iniciar al cargar
 		buildCards();
