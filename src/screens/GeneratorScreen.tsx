@@ -19,7 +19,11 @@ import CharacterStats from '../components/CharacterStats';
 
 const { width, height } = Dimensions.get('window');
 
-const GeneratorScreen: React.FC = () => {
+interface GeneratorScreenProps {
+  mode?: 'concept' | 'writer';
+}
+
+const GeneratorScreen: React.FC<GeneratorScreenProps> = ({ mode = 'concept' }) => {
   const {
     activeBlocks,
     isSpinning,
@@ -34,6 +38,19 @@ const GeneratorScreen: React.FC = () => {
   const [cardValues, setCardValues] = useState<string[]>([]);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const intervalRefs = useRef<NodeJS.Timeout[]>([]);
+
+  // Aplicar preset según modo al montar
+  useEffect(() => {
+    if (mode === 'concept') {
+      // Básico (equivale a setModeQuick)
+      Object.entries(advancedSelections).forEach(([key]) => updateAdvancedSelections(key as any, false));
+      ['tematica','especie','alineamiento','objeto','genero','orientacion','formato'].forEach(k => updateAdvancedSelections(k as any, true));
+    } else if (mode === 'writer') {
+      // Completo
+      Object.entries(advancedSelections).forEach(([key]) => updateAdvancedSelections(key as any, true));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Generar valores iniciales solo una vez cuando cambian los bloques activos
   useEffect(() => {
@@ -118,7 +135,7 @@ const GeneratorScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Personaje</Text>
+        <Text style={styles.title}>{mode === 'concept' ? 'Concept Art' : 'Writer Character'}</Text>
         <Text style={styles.subtitle}>
           Genera un personaje con rol, profesión y rasgos internos/externos.
         </Text>
