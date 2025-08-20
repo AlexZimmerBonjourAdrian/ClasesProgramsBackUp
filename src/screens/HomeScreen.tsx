@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
@@ -10,26 +10,57 @@ interface Props {
 }
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, { toValue: 1, duration: 1600, useNativeDriver: true }),
+        Animated.timing(floatAnim, { toValue: 0, duration: 1600, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [floatAnim]);
+
+  const translateY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
+
+  const onPressIn = () => {
+    Animated.spring(buttonScale, { toValue: 0.97, useNativeDriver: true, bounciness: 6 }).start();
+  };
+  const onPressOut = () => {
+    Animated.spring(buttonScale, { toValue: 1, useNativeDriver: true, bounciness: 6 }).start();
+  };
+
+  const goToGenerator = () => navigation.navigate('Generator');
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Selecciona un generador</Text>
-      <View style={styles.cards}>
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#22c55e' }]}
-          onPress={() => navigation.navigate('Tabs', { initialTab: 'Concept' })}
-          activeOpacity={0.9}
-        >
-          <Text style={styles.cardTitle}>Character Concept Art</Text>
-          <Text style={styles.cardSubtitle}>Opciones básicas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: '#3b82f6' }]}
-          onPress={() => navigation.navigate('Tabs', { initialTab: 'Writer' })}
-          activeOpacity={0.9}
-        >
-          <Text style={styles.cardTitle}>Writer Character</Text>
-          <Text style={styles.cardSubtitle}>Todas las opciones</Text>
-        </TouchableOpacity>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Archetype Lab</Text>
+      </View>
+
+      <View style={styles.body}>
+        <Animated.View style={{ transform: [{ translateY }] }}>
+          <Text style={styles.logoText}>Archetype Lab</Text>
+        </Animated.View>
+
+        <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+          <TouchableOpacity
+            style={styles.cta}
+            onPress={goToGenerator}
+            onPressIn={onPressIn}
+            onPressOut={onPressOut}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.ctaText}>Comenzar</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Toque para comenzar • transición con desvanecido</Text>
       </View>
     </SafeAreaView>
   );
@@ -38,31 +69,54 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b1020',
-    padding: 24,
+    backgroundColor: '#e6f0ff',
   },
-  title: {
-    color: '#e5e7eb',
-    fontSize: 24,
+  header: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1e3a8a',
+    letterSpacing: 0.4,
+  },
+  body: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  logoText: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#0f172a',
+    letterSpacing: 0.6,
+    marginBottom: 24,
+  },
+  cta: {
+    backgroundColor: '#0f172a',
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 999,
+  },
+  ctaText: {
+    color: '#ffffff',
     fontWeight: '800',
-    marginBottom: 16,
+    fontSize: 16,
+    letterSpacing: 0.6,
   },
-  cards: {
-    gap: 16,
+  footer: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    alignItems: 'center',
   },
-  card: {
-    padding: 16,
-    borderRadius: 12,
-  },
-  cardTitle: {
-    color: '#001018',
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    color: 'rgba(0, 16, 24, 0.8)',
-    fontSize: 14,
+  footerText: {
+    color: '#334155',
+    fontSize: 12,
     fontWeight: '600',
   },
 });

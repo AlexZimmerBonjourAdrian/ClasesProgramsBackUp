@@ -13,8 +13,8 @@ import {
 } from 'react-native';
 import { useCharacterGenerator } from '../hooks/useCharacterGenerator';
 import CharacterCard from '../components/CharacterCard';
-import AdvancedSettingsScreen from '../components/AdvancedSettingsScreen';
-import CharacterStats from '../components/CharacterStats';
+// import AdvancedSettingsScreen from '../components/AdvancedSettingsScreen';
+// import CharacterStats from '../components/CharacterStats';
 // import { adService } from '../services/adService'; // Desactivado temporalmente
 
 const { width, height } = Dimensions.get('window');
@@ -27,30 +27,28 @@ const GeneratorScreen: React.FC<GeneratorScreenProps> = ({ mode = 'concept' }) =
   const {
     activeBlocks,
     isSpinning,
-    advancedSelections,
     pickAndSet,
     toggleSpinningCard,
     toggleSpinningAll,
     startSpinningAll,
-    updateAdvancedSelections,
   } = useCharacterGenerator();
 
   const [cardValues, setCardValues] = useState<string[]>([]);
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  // const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const intervalRefs = useRef<NodeJS.Timeout[]>([]);
 
   // Aplicar preset según modo al montar
-  useEffect(() => {
-    if (mode === 'concept') {
-      // Básico (equivale a setModeQuick)
-      Object.entries(advancedSelections).forEach(([key]) => updateAdvancedSelections(key as any, false));
-      ['tematica','especie','alineamiento','objeto','genero','orientacion','formato'].forEach(k => updateAdvancedSelections(k as any, true));
-    } else if (mode === 'writer') {
-      // Completo
-      Object.entries(advancedSelections).forEach(([key]) => updateAdvancedSelections(key as any, true));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   if (mode === 'concept') {
+  //     // Básico (equivale a setModeQuick)
+  //     Object.entries(advancedSelections).forEach(([key]) => updateAdvancedSelections(key as any, false));
+  //     ['tematica','especie','alineamiento','objeto','genero','orientacion','formato'].forEach(k => updateAdvancedSelections(k as any, true));
+  //   } else if (mode === 'writer') {
+  //     // Completo
+  //     Object.entries(advancedSelections).forEach(([key]) => updateAdvancedSelections(key as any, true));
+  //   }
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   // Generar valores iniciales solo una vez cuando cambian los bloques activos
   useEffect(() => {
@@ -104,6 +102,15 @@ const GeneratorScreen: React.FC<GeneratorScreenProps> = ({ mode = 'concept' }) =
     };
   }, [isSpinning]); // Solo depende de isSpinning, no de pickAndSet
 
+  // Iniciar todas al entrar
+  useEffect(() => {
+    // Esperar a que existan bloques activos
+    if (activeBlocks.length > 0 && !isSpinning.some(Boolean)) {
+      startSpinningAll();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBlocks.length]);
+
   const handleCardPress = (index: number) => {
     toggleSpinningCard(index);
   };
@@ -116,40 +123,32 @@ const GeneratorScreen: React.FC<GeneratorScreenProps> = ({ mode = 'concept' }) =
     startSpinningAll();
   };
 
-  const handleAdvancedSettingsChange = (newSelections: any) => {
-    // Actualizar cada selección individualmente
-    Object.entries(newSelections).forEach(([key, value]) => {
-      updateAdvancedSelections(key as any, value as boolean);
-    });
+  // Reiniciar el giro de todas cuando ya están detenidas
+  const handleTryAgain = () => {
+    if (isSpinning.some(Boolean)) return;
+    startSpinningAll();
   };
+
+  // const handleAdvancedSettingsChange = (newSelections: any) => {
+  //   // Actualizar cada selección individualmente
+  //   Object.entries(newSelections).forEach(([key, value]) => {
+  //     updateAdvancedSelections(key as any, value as boolean);
+  //   });
+  // };
 
   const getToggleButtonText = () => {
     const anySpinning = isSpinning.some(Boolean);
     return anySpinning ? 'Detener todas' : 'Volver a girar';
   };
 
-  const getActiveCategoriesCount = () => {
-    return Object.values(advancedSelections).filter(Boolean).length;
-  };
+  // const getActiveCategoriesCount = () => {
+  //   return Object.values(advancedSelections).filter(Boolean).length;
+  // };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{mode === 'concept' ? 'Concept Art' : 'Writer Character'}</Text>
-        <Text style={styles.subtitle}>
-          Genera un personaje con rol, profesión y rasgos internos/externos.
-        </Text>
-        
-        {/* Botón de configuración avanzada */}
-        <TouchableOpacity
-          style={styles.advancedButton}
-          onPress={() => setShowAdvancedSettings(true)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.advancedButtonText}>
-            ⚙️ Configuración Avanzada ({getActiveCategoriesCount()})
-          </Text>
-        </TouchableOpacity>
+        <Text style={styles.title}>Diseño de personajes</Text>
       </View>
 
       <ScrollView 
@@ -157,12 +156,7 @@ const GeneratorScreen: React.FC<GeneratorScreenProps> = ({ mode = 'concept' }) =
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Estadísticas */}
-        <CharacterStats
-          advancedSelections={advancedSelections}
-          activeBlocksCount={activeBlocks.length}
-          onShowAdvancedSettings={() => setShowAdvancedSettings(true)}
-        />
+        {/* <CharacterStats ...comentado para simplificar a las 4 básicas... /> */}
 
         <View style={styles.cardsContainer}>
           {activeBlocks.map((category, index) => (
@@ -178,36 +172,22 @@ const GeneratorScreen: React.FC<GeneratorScreenProps> = ({ mode = 'concept' }) =
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.toggleButton}
-          onPress={handleToggleAll}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.toggleButtonText}>{getToggleButtonText()}</Text>
-        </TouchableOpacity>
+      {isSpinning.length > 0 && isSpinning.every(v => !v) && (
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.tryButton} onPress={handleTryAgain} activeOpacity={0.85}>
+            <Text style={styles.tryButtonText}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
-        <TouchableOpacity
-          style={styles.startButton}
-          onPress={handleStartAll}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.startButtonText}>Iniciar todas</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal de configuración avanzada */}
-      <Modal
-        visible={showAdvancedSettings}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
+      {/* Modal de configuración avanzada comentado */}
+      {/* <Modal visible={showAdvancedSettings} animationType="slide" presentationStyle="pageSheet">
         <AdvancedSettingsScreen
           advancedSelections={advancedSelections}
           onAdvancedSelectionsChange={handleAdvancedSettingsChange}
           onClose={() => setShowAdvancedSettings(false)}
         />
-      </Modal>
+      </Modal> */}
 
              {/* Banner de anuncios (desactivado temporalmente) */}
        {/* <View style={styles.bannerContainer}>
@@ -220,25 +200,29 @@ const GeneratorScreen: React.FC<GeneratorScreenProps> = ({ mode = 'concept' }) =
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b1020',
+    backgroundColor: '#e6f0ff', // AliceBlue-like
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 10,
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(15, 23, 42, 0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#e5e7eb',
-    marginBottom: 6,
-    letterSpacing: 0.2,
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#0f172a',
+    marginBottom: 8,
+    letterSpacing: 0.4,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#94a3b8',
-    marginBottom: 16,
-  },
+  subtitle: { display: 'none' as any },
   advancedButton: {
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
     borderWidth: 1,
@@ -257,62 +241,55 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 24,
+    paddingTop: 12,
   },
   cardsContainer: {
     paddingHorizontal: 12,
+    maxWidth: 920,
+    alignSelf: 'center',
+    width: '100%',
   },
   footer: {
-    flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    paddingBottom: Platform.OS === 'android' ? 20 : 16, // Margen extra para Android
-    gap: 12,
-    backgroundColor: '#0b1020', // Asegurar que el fondo sea consistente
-  },
-  toggleButton: {
-    flex: 1,
-    backgroundColor: '#22d3ee',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 12,
+    paddingBottom: Platform.OS === 'android' ? 20 : 16,
+    backgroundColor: '#f8fafc',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(15, 23, 42, 0.08)',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    elevation: 8,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
   },
-  toggleButtonText: {
-    color: '#001018',
-    fontWeight: '800',
-    fontSize: 16,
-    letterSpacing: 0.2,
-  },
-  startButton: {
-    flex: 1,
-    backgroundColor: '#3b82f6',
+  tryButton: {
+    backgroundColor: '#d4af37',
     paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 12,
+    paddingHorizontal: 36,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: '#b68c1a',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
     elevation: 8,
   },
-  startButtonText: {
-    color: '#ffffff',
-    fontWeight: '800',
-    fontSize: 16,
-    letterSpacing: 0.2,
+  tryButtonDisabled: {
+    backgroundColor: '#e8ce72',
+    shadowOpacity: 0.12,
+  },
+  tryButtonText: {
+    color: '#0f172a',
+    fontWeight: '900',
+    fontSize: 18,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  tryButtonTextDisabled: {
+    color: 'rgba(31, 41, 55, 0.7)',
   },
   bannerContainer: {
     paddingHorizontal: 20,

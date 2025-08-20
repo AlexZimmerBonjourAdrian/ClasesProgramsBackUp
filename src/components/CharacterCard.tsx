@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -28,6 +28,9 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
 }) => {
   const spinValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
+  const appearOpacity = useRef(new Animated.Value(0)).current;
+  const appearTranslateY = useRef(new Animated.Value(12)).current;
 
   // Animación de giro
   useEffect(() => {
@@ -54,59 +57,58 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
     }
   }, [isSpinning, scaleValue]);
 
-  // Obtener colores basados en el accent
-  const getColors = (accent: string) => {
-    const colors: Record<string, { primary: string; secondary: string }> = {
-      c1: { primary: '#ef4444', secondary: '#b91c1c' }, // Rol
-      c2: { primary: '#f59e0b', secondary: '#b45309' }, // Profesión
-      c3: { primary: '#10b981', secondary: '#065f46' }, // Interno
-      c4: { primary: '#3b82f6', secondary: '#1e40af' }, // Externo
-      c5: { primary: '#a855f7', secondary: '#6b21a8' }, // Temática
-      c6: { primary: '#ec4899', secondary: '#9d174d' }, // Especie
-      c7: { primary: '#14b8a6', secondary: '#0f766e' }, // Alineamiento moral
-      c8: { primary: '#f43f5e', secondary: '#9f1239' }, // Objeto de interés
-      c9: { primary: '#06b6d4', secondary: '#0e7490' }, // Características físicas
-      c10: { primary: '#84cc16', secondary: '#65a30d' }, // Antecedentes
-      c11: { primary: '#f97316', secondary: '#ea580c' }, // Motivaciones
-      c12: { primary: '#8b5cf6', secondary: '#7c3aed' }, // Relaciones
-      c13: { primary: '#06b6d4', secondary: '#0e7490' }, // Habilidades
-      c14: { primary: '#dc2626', secondary: '#b91c1c' }, // Debilidades
-      c15: { primary: '#059669', secondary: '#047857' }, // Entorno
-      c16: { primary: '#7c3aed', secondary: '#6d28d9' }, // Elementos narrativos
-      c17: { primary: '#0891b2', secondary: '#0e7490' }, // Características únicas
-      c18: { primary: '#be185d', secondary: '#9d174d' }, // Elementos culturales
-      c19: { primary: '#e11d48', secondary: '#be123c' }, // Orientación sexual
-      c20: { primary: '#0d9488', secondary: '#0f766e' }, // Formato/Medio
-      c21: { primary: '#f59e0b', secondary: '#d97706' }, // Estilo autor
-      c22: { primary: '#10b981', secondary: '#059669' }, // Tipo de estilo
-      c23: { primary: '#f472b6', secondary: '#db2777' }, // Género
-    };
+  // Animación de aparición por tarjeta (stagger por índice)
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(appearOpacity, { toValue: 1, duration: 320, delay: index * 60, useNativeDriver: true }),
+      Animated.timing(appearTranslateY, { toValue: 0, duration: 320, delay: index * 60, useNativeDriver: true }),
+    ]).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    return colors[accent] || colors.c1;
+  const handlePressIn = () => {
+    Animated.spring(pressScale, { toValue: 0.985, useNativeDriver: true, bounciness: 6 }).start();
+  };
+  const handlePressOut = () => {
+    Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, bounciness: 6 }).start();
   };
 
-  const colors = getColors(category.accent);
+  // Paleta por acento (sólida, minimalista)
+  const getAccentColor = (accent: string) => {
+    const colors: Record<string, string> = {
+      c1: '#dc2626', // rojo (Rol)
+      c2: '#f59e0b', // naranja (Profesión)
+      c3: '#059669', // verde (Interno)
+      c4: '#2563eb', // azul (Externo)
+    };
+    return colors[accent] || '#4b5563';
+  };
+  const accentColor = getAccentColor(category.accent);
 
   return (
     <Animated.View
       style={[
         styles.card,
         {
-          backgroundColor: colors.primary,
-          transform: [{ scale: scaleValue }],
+          backgroundColor: accentColor,
+          opacity: appearOpacity,
+          transform: [
+            { translateY: appearTranslateY },
+            { scale: Animated.multiply(scaleValue, pressScale) },
+          ],
         },
       ]}
     >
       <TouchableOpacity
         style={styles.touchable}
         onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         activeOpacity={0.8}
       >
         <View style={styles.content}>
-          <Text style={styles.label}>{category.key}</Text>
-          <Text style={styles.value} numberOfLines={3}>
-            {value}
-          </Text>
+          <Text style={styles.labelMinimal}>{category.key}</Text>
+          <Text style={styles.value} numberOfLines={3}>{value}</Text>
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -115,46 +117,42 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 14,
     marginHorizontal: 8,
-    marginVertical: 4,
-    minHeight: 100,
+    marginVertical: 8,
+    minHeight: 120,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
-    shadowRadius: 24,
+    shadowRadius: 16,
     elevation: 8,
   },
   touchable: {
     flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   content: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
   },
-  label: {
+  labelMinimal: {
+    color: 'rgba(255,255,255,0.85)',
     fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.85)',
+    fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.12,
+    letterSpacing: 0.4,
     marginBottom: 8,
-    textShadowColor: 'rgba(0, 0, 0, 0.25)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 0,
   },
   value: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '900',
     color: '#ffffff',
-    lineHeight: 24,
-    textShadowColor: 'rgba(0, 0, 0, 0.28)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 0,
+    lineHeight: 28,
+    textAlign: 'left',
   },
 });
 
